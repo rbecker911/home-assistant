@@ -1,0 +1,240 @@
+sensor:
+  - platform: mqtt
+    name: Robs Phone Battery Level
+    state_topic: "zanzito/robs_phone/battery_level"
+
+  - platform: mqtt
+    name: Robs Phone Info
+    state_topic: "zanzito/robs_phone/device_info"
+    value_template: '{{ value_json.device_info }}'
+
+  - platform: mqtt
+    name: Robs Phone Current App
+    state_topic: "zanzito/robs_phone/device_info"
+    value_template: '{{ value_json.current_foreground_app }}'
+
+
+device_tracker:
+  - platform: mqtt_json
+    devices:
+      robs_phone: "zanzito/robs_phone/location"
+  - platform: ping
+    hosts:
+      robs_ping: 192.168.3.117
+
+binary_sensor:
+  - platform: mqtt
+    name: "Robs Phone Status"
+    state_topic: "zanzito/robs_phone/status"
+    payload_on: "1"
+    payload_off: "0"
+    sensor_class: connectivity
+
+  - platform: mqtt
+    name: Robs Phone Locked
+    state_topic: "zanzito/robs_phone/device_info"
+    payload_on: "True"
+    payload_off: "False"
+    value_template: '{{ value_json.screen_locked }}'
+
+  - platform: mqtt
+    name: Robs Phone Sound
+    state_topic: "zanzito/robs_phone/say"
+    payload_on: "1"
+    payload_off: "0"
+    device_class: sound
+
+  - platform: mqtt
+    name: Robs Phone Charging
+    state_topic: "zanzito/robs_phone/device_info"
+    value_template: '{{ value_json.battery_charging }}'
+    payload_on: "True"
+    payload_off: "False"
+    device_class: power
+
+  - platform: bayesian
+    prior: 0.9
+    name: 'Rob Home'
+    probability_threshold: 0.9
+    observations:
+      - entity_id: 'device_tracker.robs_ping'
+        prob_given_true: 0.9
+        prob_given_false: 0.1
+        platform: 'state'
+        to_state: 'home'
+      - entity_id: 'device_tracker.robs_phone'
+        prob_given_true: 0.9
+        prob_given_false: 0.2
+        platform: 'state'
+        to_state: 'home'
+
+  - platform: bayesian
+    name: rob_in_bed
+    prior: 0.25
+    probability_threshold: 0.95
+    observations:
+      - entity_id: 'binary_sensor.sleepnumber_p6_rob_is_in_bed'
+        prob_given_true: 0.95
+        prob_given_false: 0.1
+        platform: 'state'
+        to_state: 'on'
+      - entity_id: 'sensor.rob_beacon'
+        prob_given_true: 0.8
+        prob_given_false: 0.3
+        platform: 'state'
+        to_state: 'bedroom'
+      - entity_id: 'binary_sensor.robs_phone_locked'
+        prob_given_true: 0.8
+        prob_given_false: 0.4
+        platform: 'state'
+        to_state: 'on'
+      - entity_id: 'sensor.robs_phone_current_app'
+        prob_given_true: 0.8
+        prob_given_false: 0.4
+        platform: 'state'
+        to_state: ''
+
+
+
+    
+
+input_boolean:
+  rob_moving_in_bed:
+    name: Rob moving in bed
+    initial: off
+  rob_in_bed:
+    name: Rob In Bed
+    initial: off
+
+
+
+
+automation:
+  - alias: 'Rob In Bed'
+    trigger:
+      platform: state
+      entity_id: binary_sensor.sleepnumber_p6_rob_is_in_bed
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: 'binary_sensor.sleepnumber_p6_rob_is_in_bed'
+          state: 'on'
+        - condition: state
+          entity_id: 'sensor.rob_beacon'
+          state: 'bedroom'
+        - condition: state
+          entity_id: 'binary_sensor.robs_phone_locked'
+          state: 'on'
+        - condition: state
+          entity_id: 'sensor.robs_phone_current_app'
+          state: ''
+        - condition: state
+          entity_id: 'input_boolean.rob_in_bed'
+          state: 'off'
+        - condition: or
+          conditions:
+            - condition: state
+              entity_id: 'binary_sensor.robs_phone_charging'
+              state: 'on'
+            - condition: state
+              entity_id: 'sensor.robs_phone_battery_level'
+              state: '100'
+    action:
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.rob_in_bed
+      - event: event_rob_in_bed
+        event_data:
+          state: 'on'
+
+  - alias: 'Rob Moving in Bed'
+    trigger:
+      - platform: state
+        entity_id: sensor.robs_phone_current_app
+      - platform: state
+        entity_id: sensor.robs_phone_charging
+      - platform: state
+        entity_id: sensor.rob_beacon
+      - platform: state
+        entity_id: binary_sensor.robs_phone_locked
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: 'input_boolean.rob_in_bed'
+          state: 'on'
+        - condition: state
+          entity_id: 'input_boolean.rob_moving_in_bed'
+          state: 'off'
+        - condition: or
+          conditions:
+            - condition: template
+              value_template: "{% if not is_state('sensor.rob_beacon', 'bedroom') %}true{% endif %}"
+            - condition: and
+              conditions:
+                - condition: state
+                  entity_id: 'binary_sensor.robs_phone_charging'
+                  state: 'off'
+                - condition: numeric_state
+                  entity_id: 'sensor.robs_phone_battery_level'
+                  below: 100
+            - condition: template
+              value_template: "{% if not is_state('sensor.robs_phone_current_app', '') %}true{% endif %}"
+            - condition: state
+              entity_id: 'binary_sensor.robs_phone_locked'
+              state: 'off'
+    action:
+      - event: event_rob_moving_in_bed
+        event_data:
+          state: 'on'
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.rob_moving_in_bed
+
+  - alias: 'Rob Out of Bed'
+    trigger:
+      platform: state
+      entity_id: binary_sensor.sleepnumber_p6_rob_is_in_bed
+      from: 'on'
+      to: 'off'
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: input_boolean.rob_in_bed
+          state: 'on'
+        - condition: state
+          entity_id: input_boolean.rob_moving_in_bed
+          state: 'on' 
+    action:
+      - service: input_boolean.turn_off
+        data:
+          entity_id: input_boolean.rob_in_bed
+      - service: input_boolean.turn_off
+        data:
+          entity_id: input_boolean.rob_moving_in_bed
+      - event: event_rob_in_bed
+        event_data:
+          state: 'on'
+
+
+
+
+#camera:
+#  - platform: mqtt
+#    name: robs Phone Camera
+#    topic: "zanzito/robs_phone/picture"
+#  - platform: mqtt
+#    name: robs Shared Camera
+#    topic: "zanzito/shared_pictures/robs_phone"
+
+#group:
+#  robs_phone:
+#    name: robs_phone
+#    view: no
+#    entities:
+#      - sensor.robs_phone_battery_level
+#      - binary_sensor.robs_phone_sound
+#      - device_tracker.robs_phone
+#      - sensor.rob_beacon

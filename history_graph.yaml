@@ -1,0 +1,53 @@
+internet_bandwidth_graph:
+  name: Internet Bandwidth
+  hours_to_show: 24 
+  entities:
+    - sensor.internet_speed_in
+    - sensor.internet_speed_out
+
+internet_speed_test_graph:
+  name: Internet SpeedTest
+  hours_to_show: 48
+  entities:
+    - sensor.speedtest_upload
+    - sensor.speedtest_download
+
+internet_ping_graph:
+  name: Internet Latency
+  hours_to_show: 48
+  entities:
+    - sensor.speedtest_ping
+
+room_humidity_graph:
+  name: Room Humidity
+  hours_to_show: 72
+  entities:
+    - sensor.humidity_office
+    - sensor.humidity_basement
+    - sensor.humidity_master_bedroom
+
+room_temp_graph:
+  name: Room Temperatures
+  hours_to_show: 72
+  entities:
+    - sensor.temperature_office
+    - sensor.temperature_basement
+    - sensor.temperature_master_bedroom
+
+master_bedroom_climate_graph:
+  name: Master Bedroom Climate
+  hours_to_show: 72
+  entities:
+    - sensor.temperature_master_bedroom
+    - sensor.humidity_master_bedroom
+
+sensor_temp_graph:
+  name: Sensor Temperatures
+  hours_to_show: 72
+  entities:
+    - sensor.temperature_window_livingroom
+    - sensor.temperature_front_door
+    - sensor.temperature_back_door
+    - sensor.temperature_window_familyroom_large
+
+          

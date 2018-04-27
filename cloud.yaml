@@ -1,0 +1,36 @@
+alexa:
+  filter:
+    include_entities:
+      - media_player.familyroom_tv
+      - media_player.livingroom_tv
+      - light.familyroom_lights
+      - light.livingroom_lights
+      - light.master_bedroom_lights
+      - light.front_door
+      - script.leave_the_house
+      - script.night_time_tv
+      - script.good_morning
+      - script.go_to_bed
+      - script.sleep_tight
+      - cover.garage_door
+  entity_config:
+    media_player.livingroom_tv:
+      name: 'Living Room TV'
+      description: The TV in the livingroom.
+      display_categories: 'TV'
+    media_player.familyroom_tv:
+      name: 'Family Room TV'
+      description: The TV in the family room.
+      display_categories: 'TV'
+    light.livingroom_lights:
+      name: 'Living Room Lights'
+      description: All the living room lights.
+      display_categories: 'LIGHT'
+    light.front_door:
+      name: 'Front Door Lights'
+      description: Front Door Lights
+      display_categories: 'LIGHT'
+    light.master_bedroom_lights:
+      name: 'Master Bedroom Lights'
+      description: Master Bedroom Lights
+      display_categories: 'LIGHT'

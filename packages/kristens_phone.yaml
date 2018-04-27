@@ -1,0 +1,335 @@
+sensor:
+  - platform: mqtt
+    name: Kristens Phone Battery Level
+    state_topic: "zanzito/Kristens_phone/battery_level"
+
+  - platform: mqtt
+    name: Kristens Phone Info
+    state_topic: "zanzito/Kristens_phone/device_info"
+    value_template: '{{ value_json.device_info }}'
+
+  - platform: mqtt
+    name: Kristens Phone Current App
+    state_topic: "zanzito/Kristens_phone/device_info"
+    value_template: '{{ value_json.current_foreground_app }}'
+
+
+device_tracker:
+  - platform: mqtt_json
+    devices:
+      Kristens_phone: "zanzito/Kristens_phone/location"
+  - platform: ping
+    hosts:
+      kristens_ping: 192.168.3.115
+
+binary_sensor:
+  - platform: mqtt
+    name: "Kristens Phone Status"
+    state_topic: "zanzito/Kristens_phone/status"
+    payload_on: "1"
+    payload_off: "0"
+    sensor_class: connectivity
+
+  - platform: mqtt
+    name: Kristens Phone Locked
+    state_topic: "zanzito/Kristens_phone/device_info"
+    payload_on: "True"
+    payload_off: "False"
+    value_template: '{{ value_json.screen_locked }}'
+
+  - platform: mqtt
+    name: Kristens Phone Sound
+    state_topic: "zanzito/Kristens_phone/say"
+    payload_on: "1"
+    payload_off: "0"
+    device_class: sound
+
+  - platform: mqtt
+    name: Kristens Phone Charging
+    state_topic: "zanzito/Kristens_phone/device_info"
+    value_template: '{{ value_json.battery_charging }}'
+    payload_on: "True"
+    payload_off: "False"
+    device_class: power
+
+  - platform: bayesian
+    prior: 0.9
+    name: 'Kristen Home'
+    probability_threshold: 0.9
+    observations:
+      - entity_id: 'device_tracker.kristens_ping'
+        prob_given_true: 0.9
+        prob_given_false: 0.1
+        platform: 'state'
+        to_state: 'home'
+      - entity_id: 'device_tracker.kristens_phone'
+        prob_given_true: 0.9
+        prob_given_false: 0.2
+        platform: 'state'
+        to_state: 'home'
+
+  - platform: bayesian
+    name: kristen_in_bed
+    prior: 0.25
+    probability_threshold: 0.95
+    observations:
+      - entity_id: 'binary_sensor.sleepnumber_p6_kristen_is_in_bed'
+        prob_given_true: 0.95
+        prob_given_false: 0.1
+        platform: 'state'
+        to_state: 'on'
+      - entity_id: 'sensor.kristen_beacon'
+        prob_given_true: 0.8
+        prob_given_false: 0.3
+        platform: 'state'
+        to_state: 'bedroom'
+      - entity_id: 'binary_sensor.kristens_phone_locked'
+        prob_given_true: 0.8
+        prob_given_false: 0.4
+        platform: 'state'
+        to_state: 'on'
+      - entity_id: 'sensor.kristens_phone_current_app'
+        prob_given_true: 0.8
+        prob_given_false: 0.4
+        platform: 'state'
+        to_state: ''
+
+
+input_boolean:
+  kristen_moving_in_bed:
+    name: Kristen moving in bed
+    initial: off
+  kristen_in_bed:
+    name: Kristen In Bed
+    initial: off
+  kristen_napping_notification:
+    name: Kristen Napping Notification
+    initial: off
+  kristen_moving_in_bed_notification:
+    name: Kristen moving in bed notification
+    initial: off
+  kristen_in_bed_notification:
+    name: Kristen In Bed Notification
+    initial: off
+  kristen_out_of_bed_notification:
+    name: Kristen Out of bed notification
+    initial: off
+
+variable:
+  kristen_in_bed:
+    value: 0
+    restore: true
+
+
+
+automation:
+  - alias: 'Kristen In Bed'
+    trigger:
+      platform: state
+      entity_id: binary_sensor.sleepnumber_p6_kristen_is_in_bed
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: 'binary_sensor.sleepnumber_p6_kristen_is_in_bed'
+          state: 'on'
+        - condition: state
+          entity_id: 'sensor.kristen_beacon'
+          state: 'bedroom'
+        - condition: state
+          entity_id: 'binary_sensor.kristens_phone_locked'
+          state: 'on'
+        - condition: state
+          entity_id: 'sensor.kristens_phone_current_app'
+          state: ''
+        - condition: state
+          entity_id: 'variable.kristen_in_bed'
+          state: '0'
+        - condition: or
+          conditions:
+            - condition: state
+              entity_id: 'binary_sensor.kristens_phone_charging'
+              state: 'on'
+            - condition: state
+              entity_id: 'sensor.kristens_phone_battery_level'
+              state: '100'
+    action:
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.kristen_in_bed
+      - event: event_kristen_in_bed
+        event_data:
+          state: 'on'
+
+  - alias: 'Kristen Moving in Bed'
+    trigger:
+      - platform: state
+        entity_id: sensor.kristens_phone_current_app
+      - platform: state
+        entity_id: sensor.kristens_phone_charging
+      - platform: state
+        entity_id: sensor.kristen_beacon
+      - platform: state
+        entity_id: binary_sensor.kristens_phone_locked
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: 'variable.kristen_in_bed'
+          state: 'on'
+        - condition: state
+          entity_id: 'input_boolean.kristen_moving_in_bed'
+          state: 'off'
+        - condition: or
+          conditions:
+            - condition: template
+              value_template: "{% if not is_state('sensor.kristen_beacon', 'bedroom') %}true{% endif %}"
+            - condition: and
+              conditions:
+                - condition: state
+                  entity_id: 'binary_sensor.kristens_phone_charging'
+                  state: 'off'
+                - condition: numeric_state
+                  entity_id: 'sensor.kristens_phone_battery_level'
+                  below: 100
+            - condition: template
+              value_template: "{% if not is_state('sensor.kristens_phone_current_app', '') %}true{% endif %}"
+            - condition: state
+              entity_id: 'binary_sensor.kristens_phone_locked'
+              state: 'off'
+    action:
+      - event: event_kristen_moving_in_bed
+        event_data:
+          state: 'on'
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.kristen_moving_in_bed
+
+  - alias: 'Kristen Out of Bed'
+    trigger:
+      platform: state
+      entity_id: binary_sensor.sleepnumber_p6_kristen_is_in_bed
+      from: 'on'
+      to: 'off'
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: input_boolean.kristen_in_bed
+          state: 'on'
+        - condition: state
+          entity_id: input_boolean.kristen_moving_in_bed
+          state: 'on' 
+    action:
+      - service: variable.set_variable
+        data:
+          variable: variable.kristen_in_bed
+          value: 1
+      - service: input_boolean.turn_off
+        data:
+          entity_id: input_boolean.kristen_moving_in_bed
+      - event: event_kristen_in_bed
+        event_data:
+          state: 'on'
+
+  - alias: Notify Rob Kristen is Moving in Bed
+    trigger:
+      platform: state
+      entity_id: input_boolean.kristen_moving_in_bed
+      to: 'on'
+      from: 'off'
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: input_boolean.kristen_napping_notification
+          state: 'on'
+        - condition: state
+          entity_id: input_boolean.kristen_moving_in_bed_notification
+          state: 'off'
+        - condition: time
+          after: '13:00:00'
+          before: '16:30:00'
+    action:
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.kristen_moving_in_bed_notification
+      - service: script.zanzito_send_notification
+        data:
+          dest_id: 'robs_phone'
+          message: 'Kristen is moving in bed'
+
+  - alias: Notify Rob Kristen Out of bed
+    trigger:
+      platform: state
+      entity_id: variable.kristen_in_bed
+      to: '1'
+      from: '0'
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: input_boolean.kristen_napping_notification
+          state: 'on'
+        - condition: state
+          entity_id: input_boolean.kristen_out_of_bed_notification
+          state: 'off'
+        - condition: time
+          after: '13:00:00'
+          before: '16:30:00'
+    action:
+      - service: script.zanzito_send_notification
+        data:
+          dest_id: 'robs_phone'
+          message: 'Kristen is out of bed'
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.kristen_out_of_bed_notification
+
+  - alias: Notify Rob Kristen in bed
+    trigger:
+      platform: state
+      entity_id: variable.kristen_in_bed
+      to: '0'
+      from: '1'
+    condition:
+      condition: and
+      conditions:
+        - condition: time
+          after: '13:00:00'
+          before: '16:30:00'
+        - condition: state
+          entity_id: input_boolean.kristen_in_bed_notification
+          state: 'off'
+        - condition: state
+          entity_id: input_boolean.kristen_napping_notification
+          state: 'on'
+    action:
+      - service: script.zanzito_send_notification
+        data:
+          dest_id: 'robs_phone'
+          message: 'Kristen is in bed'
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.kristen_in_bed_notification
+
+
+
+
+#camera:
+#  - platform: mqtt
+#    name: Kristens Phone Camera
+#    topic: "zanzito/Kristens_phone/picture"
+#  - platform: mqtt
+#    name: Kristens Shared Camera
+#    topic: "zanzito/shared_pictures/Kristens_phone"
+
+#group:
+#  Kristens_phone:
+#    name: Kristens_phone
+#    view: no
+#    entities:
+#      - sensor.Kristens_phone_battery_level
+#      - binary_sensor.Kristens_phone_sound
+#      - device_tracker.Kristens_phone
+#      - sensor.rob_beacon

@@ -1,0 +1,198 @@
+homeassistant:
+
+binary_sensor:
+  - platform: mqtt
+    state_topic: "livingroom_tv/cec/0"
+    name: "livingroom_tv_power"
+    payload_on: "on"
+    payload_off: "off"
+    device_class: "power"
+
+switch:
+  - platform: mqtt
+    name: "Livingroom TV"
+    state_topic: "livingroom_tv/cec/0"
+    command_topic: "livingroom_tv/cec/0/cmd"
+    payload_on: "on"
+    payload_off: "off"
+    optimistic: false
+    qos: 0
+    retain: true
+
+sensor:
+  - platform: template
+    sensors:
+      livingroom_tv_volume:
+        friendly_name: Livingroom TV Volume
+        value_template: "{{ states.media_player.livingroom_receiver.attributes.volume_level }}"
+
+input_boolean:
+  livingroom_tv_morning_poweron:
+    initial: off
+
+
+media_player:
+  - platform: kodi
+    host: 192.168.3.181
+    name: livingroom kodi
+
+  - platform: onkyo
+    host: 192.168.3.102
+    name: livingroom_receiver
+
+  - platform: universal
+    name: Livingroom TV
+    children: 
+      - media_player.livingroom_kodi
+    state_template: >
+      {% if (is_state('media_player.livingroom_kodi', 'idle') or is_state('media_player.livingroom_kodi', 'off')) and is_state('binary_sensor.livingroom_tv_power', 'off') %}
+      off
+      {% else %}
+      on
+      {% endif %}
+    commands:
+      turn_on:
+        service: script.turn_on
+        data:
+          entity_id: script.turn_on_livingroom_mediacenter
+      turn_off:
+        service: script.turn_on
+        data:
+          entity_id: script.turn_off_livingroom_mediacenter
+      volume_up:
+        service: media_player.volume_set
+        data_template:
+          entity_id: media_player.livingroom_receiver
+          volume_level: '{{ states.media_player.livingroom_receiver.attributes.volume_level + 0.02 }}'
+      volume_down:
+        service: media_player.volume_set
+        data_template:
+          entity_id: media_player.livingroom_receiver
+          volume_level: '{{ states.media_player.livingroom_receiver.attributes.volume_level - 0.02 }}'
+      volume_mute:
+        service: media_player.volume_mute
+        data:
+          entity_id: media_player.livingroom_receiver
+      select_source:
+        service: media_player.select_source
+        data_template:
+          entity_id: media_player.receiver
+          source: '{{ source }}'
+      volume_set:
+        service: media_player.volume_set
+        data_template:
+          entity_id: media_player.livingroom_receiver
+          volume_level: '{{ volume_level }}'
+    attributes:
+      volume_level: media_player.livingroom_receiver|volume_level
+      source: media_player.livingroom_receiver|source
+      source_list: media_player.livingroom_receiver|source_list
+      is_volume_muted: media_player.livingroom_receiver|is_volume_muted
+
+
+script:
+  turn_on_livingroom_mediacenter:
+    alias: Turn on livingroom mediacenter
+    sequence:
+      - service: switch.turn_on
+        data:
+          entity_id: switch.livingroom_tv
+      - service: media_player.turn_on
+        data:
+          entity_id: media_player.livingroom_receiver
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.livingroom_receiver
+          volume_level: "0.6"
+      - service: media_player.select_source
+        data:
+          entity_id: media_player.livingroom_receiver
+          source: "video2"
+
+  turn_off_livingroom_mediacenter:
+    alias: Turn off livingroom mediacenter
+    sequence:
+      - service: media_player.media_stop
+        data:
+          entity_id: media_player.livingroom_kodi
+      - service: switch.turn_off
+        data:
+          entity_id: switch.livingroom_tv
+      - service: media_player.turn_off
+        data:
+          entity_id: media_player.livingroom_receiver
+
+  play_livingroom_pbs:
+    alias: Livingroom PBS
+    sequence:
+      - service: script.turn_on
+        data:
+          entity_id: script.turn_on_livingroom_mediacenter
+      - service: media_player.play_media
+        data_template:
+          entity_id: media_player.livingroom_kodi
+          media_content_type: "CHANNEL"
+          media_content_id: "5"
+
+  play_livingroom_cbs:
+    alias: Livingroom CBS
+    sequence:
+      - service: script.turn_on
+        data:
+          entity_id: script.turn_on_livingroom_mediacenter
+      - service: media_player.play_media
+        data_template:
+          entity_id: media_player.livingroom_kodi
+          media_content_type: "CHANNEL"
+          media_content_id: "7"
+
+
+automation:
+  - alias: 'Kristen Morning TV'
+    trigger:
+      platform: state
+      entity_id: sensor.kristen_beacon
+      to: 'livingroom'
+    condition:
+      condition: and
+      conditions:
+        - condition: time
+          after: '7:05:00'
+          before: '8:05:00'
+        - condition: state
+          entity_id: media_player.livingroom_tv
+          state: 'off'
+        - condition: state
+          entity_id: input_boolean.livingroom_tv_morning_poweron
+          state: 'off'
+    action:
+      - service: light.turn_on
+        entity_id:
+          - group.livingroom_lights
+      - service: script.turn_on
+        entity_id:
+          - script.play_livingroom_cbs
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.livingroom_tv_morning_poweron
+
+  - alias: 'Reset Daily Automations - Livingroom TV'
+    trigger:
+      platform: time
+      at: '00:00:01'
+    action:
+      - service: input_boolean.turn_off
+        data:
+          entity_id: input_boolean.livingroom_tv_morning_poweron
+
+  - alias: 'Livingroom TV: Turn off the TV when Kodi is in idle > 15 min'
+    trigger:
+      platform: state
+      entity_id: media_player.livingroom_kodi
+      to: 'idle'
+      for:
+        minutes: 15
+    action:
+      - service: script.turn_on
+        data:
+          entity_id: script.turn_off_livingroom_mediacenter

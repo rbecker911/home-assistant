@@ -1,0 +1,254 @@
+homeassistant:
+  customize:
+    group.zigbee_lastupdated_sensors:
+      friendly_name: Last Updated
+    group.zigbee_temperature_sensors:
+      friendly_name: Temperatures
+    group.zigbee_sensor_battery_level:
+      friendly_name: Battery Levels
+    sensor.lastupdated_window_livingroom_sensor:
+      friendly_name: Livingroom Window
+    sensor.temperature_window_livingroom:
+      friendly_name: Livingroom Window
+    sensor.lastupdated_front_door_sensor:
+      friendly_name: Front Door
+    sensor.temperature_front_door:
+      friendly_name: Front Door
+    sensor.lastupdated_back_door_sensor:
+      friendly_name: Back Door
+    sensor.temperature_back_door:
+      friendly_name: Back Door
+    sensor.lastupdated_window_familyroom_large_sensor:
+      friendly_name: Family Room Large Window
+    sensor.temperature_window_familyroom_large:
+      friendly_name: Family Room Large Window
+    sensor.lastupdated_mi_magic_cube:
+      friendly_name: Mi Magic Cube
+    sensor.temperature_mi_magic_cube:
+      friendly_name: Mi Magic Cube
+    sensor.lastupdated_upstairs_hallway_motion:
+      friendly_name: Upstairs Hallway Motion
+    sensor.mi_magic_cube_battery_level:
+      friendly_name: Mi Magic Cube
+    group.windows:
+      friendly_name: Windows
+      templates:
+        _stateDisplay: "if ( state === 'off') return 'Closed'; else return 'Open';"
+        icon: "if ( state === 'off') return 'mdi:window-closed'; else return 'mdi:window-open';"
+    group.exterior_doors:
+      friendly_name: Exterior Doors
+      templates:
+        _stateDisplay: "if ( state === 'off') return 'Closed'; else return 'Open';"
+        icon: "if ( state === 'off') return 'mdi:door-closed'; else return 'mdi:door-open';"
+
+  customize_glob:
+    "binary_sensor.*_door":
+      templates:
+        state: "if (state === 'on') return 'Open'; else return 'Closed';"
+        icon: "if ( state === 'off') return 'mdi:door-closed'; else return 'mdi:door-open';"
+    "binary_sensor.window_*":
+      templates:
+        state: "if (state === 'on') return 'Open'; else return 'Closed';"
+        icon: "if ( state === 'off') return 'mdi:window-closed'; else return 'mdi:window-open';" 
+    "sensor.*battery_*":
+      templates:
+        icon: >
+          if ( state > 90 ) return 'mdi:battery';
+          if ( state > 80 ) return 'mdi:battery-90';
+          if ( state > 70 ) return 'mdi:battery-80';
+          if ( state > 60 ) return 'mdi:battery-70';
+          if ( state > 50 ) return 'mdi:battery-60';
+          if ( state > 40 ) return 'mdi:battery-50';
+          if ( state > 30 ) return 'mdi:battery-40';
+          if ( state > 20 ) return 'mdi:battery-30';
+          if ( state > 10 ) return 'mdi:battery-20';
+        hs_color: >
+          if ( state > 75 ) return [103, 100];
+          if ( state > 50 ) return [43, 100];
+          if ( state > 25 ) return [343, 100];
+        brightness: >
+          return 67;
+      unit_of_measurement: '%'
+    "sensor.temperature_*":
+      templates:
+        hs_color: >
+          if ( state > 75 ) return [343, 100 ];
+          if (state > 70 ) return [103, 100];
+          if (state > 65 ) return [223, 100];
+          return [223,100];
+        brightness: >
+         return 67;
+
+   
+
+sensor:
+###############################################################################
+# Livingroom Window sensor
+###############################################################################
+  - platform: rest
+    name: temperature_window_livingroom
+    resource: "http://192.168.3.229/api/16998CAF90/sensors/1"
+    method: GET
+    value_template: '{{(1.8 * (value_json.config.temperature / 100) + 32)|round(1) }}'
+    force_update: true
+    unit_of_measurement: "°F"
+  - platform: rest
+    name: lastupdated_window_livingroom_sensor
+    resource: "http://192.168.3.229/api/16998CAF90/sensors/1"
+    method: GET
+    value_template: "{{ as_timestamp(strptime(value_json.state.lastupdated, '%y-%m-%dT%H:%M:%S')) | timestamp_local }}"
+  - platform: template
+    sensors:
+      battery_window_livingroom:
+        friendly_name: Livingroom Window
+        value_template: "{{ states.binary_sensor.window_livingroom.attributes.battery_level }}"
+
+###############################################################################
+# Front Door sensor
+###############################################################################
+  - platform: rest
+    name: temperature_front_door
+    resource: "http://192.168.3.229/api/16998CAF90/sensors/5"
+    method: GET
+    value_template: '{{(1.8 * (value_json.config.temperature / 100) + 32)|round(1) }}'
+    force_update: true
+    unit_of_measurement: "°F"
+  - platform: rest
+    name: lastupdated_front_door_sensor
+    resource: "http://192.168.3.229/api/16998CAF90/sensors/5"
+    method: GET
+    value_template: "{{ as_timestamp(strptime(value_json.state.lastupdated, '%y-%m-%dT%H:%M:%S')) | timestamp_local }}"
+
+  - platform: template
+    sensors:
+      battery_front_door:
+        friendly_name: Front Door
+        value_template: "{{ states.binary_sensor.front_door.attributes.battery_level }}"
+
+
+###############################################################################
+# Back Door sensor
+###############################################################################
+  - platform: rest
+    name: temperature_back_door
+    resource: "http://192.168.3.229/api/16998CAF90/sensors/12"
+    method: GET
+    value_template: '{{(1.8 * (value_json.config.temperature / 100) + 32)|round(1) }}'
+    force_update: true
+    unit_of_measurement: "°F"
+  - platform: rest
+    name: lastupdated_back_door_sensor
+    resource: "http://192.168.3.229/api/16998CAF90/sensors/12"
+    method: GET
+    value_template: "{{ as_timestamp(strptime(value_json.state.lastupdated, '%y-%m-%dT%H:%M:%S')) | timestamp_local }}"
+
+  - platform: template
+    sensors:
+      battery_back_door:
+        friendly_name: Back Door
+        value_template: "{{ states.binary_sensor.back_door.attributes.battery_level }}"
+
+###############################################################################
+# Familyroom Window sensor
+###############################################################################
+  - platform: rest
+    name: temperature_window_familyroom_large
+    resource: "http://192.168.3.229/api/16998CAF90/sensors/13"
+    method: GET
+    value_template: '{{(1.8 * (value_json.config.temperature / 100) + 32)|round(1) }}'
+    force_update: true
+    unit_of_measurement: "°F"
+  - platform: rest
+    name: lastupdated_window_familyroom_large_sensor
+    resource: "http://192.168.3.229/api/16998CAF90/sensors/13"
+    method: GET
+    value_template: "{{ as_timestamp(strptime(value_json.state.lastupdated, '%y-%m-%dT%H:%M:%S')) | timestamp_local }}"
+
+  - platform: template
+    sensors:
+      battery_window_familyroom_large:
+        friendly_name: Family Room Large Window
+        value_template: "{{ states.binary_sensor.window_family_room_large.attributes.battery_level }}"
+
+###############################################################################
+# Upstairs Hallway Motion sensor
+###############################################################################
+  - platform: rest
+    name: lastupdated_upstairs_hallway_motion_sensor
+    resource: "http://192.168.3.229/api/16998CAF90/sensors/11"
+    method: GET
+    value_template: "{{ as_timestamp(strptime(value_json.state.lastupdated, '%y-%m-%dT%H:%M:%S')) | timestamp_local }}"
+
+  - platform: template
+    sensors:
+      battery_upstairs_hallway_motion:
+        friendly_name: Upstairs Hallway Motion
+        value_template: "{{ states.binary_sensor.upstairs_hallway.attributes.battery_level }}"
+
+
+###############################################################################
+# Mi Magic Cube
+###############################################################################
+  - platform: rest
+    name: temperature_mi_magic_cube
+    resource: "http://192.168.3.229/api/16998CAF90/sensors/3"
+    method: GET
+    value_template: '{{(1.8 * (value_json.config.temperature / 100) + 32)|round(1) }}'
+    force_update: true
+    unit_of_measurement: "°F"
+  - platform: rest
+    name: lastupdated_mi_magic_cube
+    resource: "http://192.168.3.229/api/16998CAF90/sensors/13"
+    method: GET
+    value_template: "{{ as_timestamp(strptime(value_json.state.lastupdated, '%y-%m-%dT%H:%M:%S')) | timestamp_local }}"
+
+
+group:
+  zigbee_lastupdated_sensors:
+    view: no
+    entities:
+      - sensor.lastupdated_window_livingroom_sensor
+      - sensor.lastupdated_front_door_sensor
+      - sensor.lastupdated_back_door_sensor
+      - sensor.lastupdated_window_familyroom_large_sensor    
+      - sensor.lastupdated_mi_magic_cube
+
+  zigbee_temperature_sensors:
+    view: no
+    entities:
+      - sensor.temperature_window_livingroom
+      - sensor.temperature_front_door
+      - sensor.temperature_back_door
+      - sensor.temperature_window_familyroom_large
+      - sensor.temperature_mi_magic_cube
+
+  zigbee_sensor_battery_level:
+    view: no
+    entities:
+      - sensor.battery_window_familyroom_large
+      - sensor.battery_back_door
+      - sensor.battery_front_door
+      - sensor.battery_window_livingroom
+      - sensor.mi_magic_cube_battery_level
+      - sensor.battery_upstairs_hallway_motion
+
+  windows:
+    view: no
+    control: hidden
+    entities:
+      - binary_sensor.window_family_room_large
+      - binary_sensor.window_livingroom
+
+  exterior_doors:
+    view: no
+    control: hidden
+    entities:
+      - binary_sensor.back_door
+      - binary_sensor.front_door
+      - binary_sensor.door_garage
+
+
+
+
+
+

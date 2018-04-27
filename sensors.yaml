@@ -1,0 +1,134 @@
+
+###############################################################################
+# Weather Forecast 
+###############################################################################
+- platform: yr
+
+#################################################
+# MQTT EnviroPi Data from bedroom
+################################################
+
+  #- platform: mqtt
+  #state_topic: "sensor/data"
+  #name: bedroom_temp
+  #unit_of_measurement: "°F"
+  #value_template: '{{ value_json.temp }}'
+  #- platform: mqtt
+  #state_topic: "sensor/data"
+  #name: bedroom_pressure
+  #unit_of_measurement: "inHG"
+  #value_template: '{{ value_json.pressure }}'
+  #- platform: mqtt
+  #state_topic: "sensor/data"
+  #name: bedroom_lux
+  #unit_of_measurement: "lux"
+  #value_template: '{{ value_json.light }}'
+  #
+
+
+###############################################################################
+# Climate sensors
+###############################################################################
+- platform: template
+  sensors:
+    thermostat_mode:
+      friendly_name: 'Thermostat Mode'
+      value_template: "{{ states.climate.thermostat.attributes.operation_mode }}"
+    thermostat_current_temp:
+      friendly_name: 'Thermostat Current Temp'
+      value_template: "{{ states.climate.thermostat.attributes.current_temperature }}"
+      unit_of_measurement: "°F"
+
+###############################################################################
+## MQTT Room presence sensors using PiZeroW and RoomAssist
+###############################################################################
+- platform: mqtt_room
+  device_id: 26c8c0dd01004c69b698054140a9dc54-0-0
+  name: 'Rob Beacon'
+  state_topic: 'room_presence'
+  timeout: 10
+  away_timeout: 600 
+
+- platform: mqtt_room
+  device_id: ad3ab4e9c1bc4812820d5891969e6f01-0-0
+  name: 'Kristen Beacon'
+  state_topic: 'room_presence'
+  timeout: 10
+  away_timeout: 600
+
+
+- platform: mqtt
+  state_topic: "room_presence/office"
+  name: Rob Office Distance
+  value_template: '{%if (value_json.id == "26c8c0dd01004c69b698054140a9dc54-0-0")%} {{ value_json.distance }}{%else%}{{states.sensor.rob_office_distance.state}}{%endif%}'
+
+- platform: mqtt
+  state_topic: "room_presence/bedroom"
+  name: Rob Bedroom Distance
+  value_template: '{%if (value_json.id == "26c8c0dd01004c69b698054140a9dc54-0-0")%} {{ value_json.distance }}{%else%}{{states.sensor.rob_bedroom_distance.state}}{%endif%}'
+
+- platform: mqtt
+  state_topic: "room_presence/kitchen"
+  name: Rob Kitchen Distance
+  value_template: '{%if (value_json.id == "26c8c0dd01004c69b698054140a9dc54-0-0")%} {{ value_json.distance }}{%else%}{{states.sensor.rob_kitchen_distance.state}}{%endif%}'
+
+- platform: mqtt
+  state_topic: "room_presence/livingroom"
+  name: Rob Livingroom Distance
+  value_template: '{%if (value_json.id == "26c8c0dd01004c69b698054140a9dc54-0-0")%} {{ value_json.distance }}{%else%}{{states.sensor.rob_livingroom_distance.state}}{%endif%}'
+
+- platform: mqtt
+  state_topic: "room_presence/familyroom"
+  name: Rob Familyroom Distance
+  value_template: '{%if (value_json.id == "26c8c0dd01004c69b698054140a9dc54-0-0")%} {{ value_json.distance }}{%else%}{{states.sensor.rob_familyroom_distance.state}}{%endif%}'
+
+- platform: mqtt
+  state_topic: "room_presence/office"
+  name: Kristen Office Distance
+  value_template: '{%if (value_json.id == "ad3ab4e9c1bc4812820d5891969e6f01-0-0")%} {{ value_json.distance }}{%else%}{{states.sensor.Kristen_office_distance.state}}{%endif%}'
+
+- platform: mqtt
+  state_topic: "room_presence/bedroom"
+  name: Kristen Bedroom Distance
+  value_template: '{%if (value_json.id == "ad3ab4e9c1bc4812820d5891969e6f01-0-0")%} {{ value_json.distance }}{%else%}{{states.sensor.Kristen_bedroom_distance.state}}{%endif%}'
+
+- platform: mqtt
+  state_topic: "room_presence/kitchen"
+  name: Kristen Kitchen Distance
+  value_template: '{%if (value_json.id == "ad3ab4e9c1bc4812820d5891969e6f01-0-0")%} {{ value_json.distance }}{%else%}{{states.sensor.Kristen_kitchen_distance.state}}{%endif%}'
+
+- platform: mqtt
+  state_topic: "room_presence/livingroom"
+  name: Kristen Livingroom Distance
+  value_template: '{%if (value_json.id == "ad3ab4e9c1bc4812820d5891969e6f01-0-0")%} {{ value_json.distance }}{%else%}{{states.sensor.Kristen_livingroom_distance.state}}{%endif%}'
+
+- platform: mqtt
+  state_topic: "room_presence/familyroom"
+  name: Kristen Familyroom Distance
+  value_template: '{%if (value_json.id == "ad3ab4e9c1bc4812820d5891969e6f01-0-0")%} {{ value_json.distance }}{%else%}{{states.sensor.Kristen_familyroom_distance.state}}{%endif%}'
+
+###############################################################################
+## Family Status Sensor
+###############################################################################
+- platform: template
+  sensors:
+    all_family:
+      friendly_name: 'All Family'
+      value_template: >-
+        {% if is_state('sensor.rob_beacon', 'not_home') and is_state('sensor.kristen_beacon', 'not_home') %}
+          not_home
+        {% elif is_state('sensor.rob_beacon', 'bedroom') and is_state('sensor.kristen_beacon', 'bedroom') and is_state('binary_sensor.sleepnumber_p6_kristen_is_in_bed', 'on') and is_state('binary_sensor.sleepnumber_p6_rob_is_in_bed', 'on') %}
+          in_bed
+        {% else %}
+          home
+        {% endif %}
+      icon_template: >-
+        {% if is_state('sensor.rob_beacon', 'not_home') and is_state('sensor.kristen_beacon', 'not_home') %}
+          mdi:airplane
+        {% elif is_state('sensor.rob_beacon', 'bedroom') and is_state('sensor.kristen_beacon', 'bedroom') and is_state('binary_sensor.sleepnumber_p6_kristen_is_in_bed', 'on') and is_state('binary_sensor.sleepnumber_p6_rob_is_in_bed', 'on') %}
+          mdi:hotel
+        {% else %}
+          mdi:home
+        {% endif %}
+
+

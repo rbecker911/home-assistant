@@ -1,0 +1,24 @@
+homeassistant:
+  customize:
+    sensor.carpresencesignal:
+      friendly_name: Connection Strength
+    sensor.carpresenceuptime:
+      friendly_name: Uptime
+    binary_sensor.carpresence:
+      friendly_name: Presence
+
+automation:
+  - alias: 'Open Garage Door if Pacifica running'
+    trigger: 
+      platform: state
+      entity_id: binary_sensor.carpresence
+      from: 'off'
+      to: 'on'
+    condition: 
+      condition: state
+      entity_id: cover.garage_door
+      state: 'closed'
+    action:
+      - service: cover.open_cover
+        entity_id: cover.garage_door
+  

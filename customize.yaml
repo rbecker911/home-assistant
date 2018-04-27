@@ -1,0 +1,70 @@
+switch.arest_switch_fishtank_light:
+  friendly_name: Fishtank Light
+binary_sensor.sleepnumber_p6_kristen_is_in_bed:
+  friendly_name: Kristen in Bed
+binary_sensor.sleepnumber_p6_rob_is_in_bed:
+  friendly_name: Rob In Bed
+sensor.dark_sky_apparent_temperature:
+  friendly_name: Apparent Temperature
+sensor.dark_sky_summary:
+  friendly_name: Weather Summary
+sensor.dark_sky_precip:
+  friendly_name: Precipitation
+sensor.dark_sky_precip_intensity:
+  friendly_name: Precip Intensity
+sensor.dark_sky_precip_probability:
+  friendly_name: Precip Probability
+sensor.dark_sky_temperature:
+  friendly_name: Temperature
+sensor.dark_sky_wind_speed:
+  friendly_name: Wind Speed
+sensor.dark_sky_wind_bearing:
+  friendly_name: Wind Bearing
+sensor.dark_sky_humidity:
+  friendly_name: Humidity
+light.40166e:
+  friendly_name: Familyroom Light
+group.all_automations:
+  hidden: false
+group.all_scripts:
+  hidden: false
+group.all_switches:
+  hidden: false
+binary_sensor.door_front:
+  friendly_name: Front Door
+binary_sensor.door_back:
+  friendly_name: Back Door
+binary_sensor.window_livingroom:
+  friendly_name: Livingroom Window
+binary_sensor.window_familyroom_main:
+  friendly_name: Familyroom Main Window
+light.living_room_lights:
+  friendly_name: Living Room
+light.garage_lights:
+  friendly_name: Garage
+light.porch_lights:
+  friendly_name: Porch
+light.familyroom_lights:
+  friendly_name: Family Room
+light.master_bedroom_lights:
+  friendly_name: Master Bedroom
+sensor.temperature_master_bedroom:
+  friendly_name: Master Bedroom
+sensor.humidity_master_bedroom:
+  friendly_name: Master Bedroom
+sensor.temperature_office:
+  friendly_name: Office
+sensor.humidity_office:
+  friendly_name: Office
+sensor.temperature_basement:
+  friendly_name: Basement
+sensor.humidity_basement:
+  friendly_name: Basement
+history_graph.room_temperatures:
+  friendly_name: Temperatures
+cover.garage_door:
+  device_class: garage_door
+binary_sensor.door_garage:
+  device_class: garage_door
+  friendly_name: Garage Door
+

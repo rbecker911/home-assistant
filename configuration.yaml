@@ -1,0 +1,145 @@
+homeassistant:
+  name: Home
+  latitude: !secret latitude
+  longitude: !secret longitude
+  elevation: 286
+  unit_system: imperial
+  time_zone: America/New_York
+  customize:
+    !include customize.yaml
+  customize_glob:
+    !include customize_glob.yaml
+  packages: !include_dir_named packages
+
+##########################################################################
+##                               Enables                                ##
+##########################################################################
+config:
+python_script:
+updater:
+discovery:
+conversation:
+sun:
+map:
+
+customizer:
+  custom_ui: local
+########################################################################
+##                             Components                             ##
+########################################################################
+
+logger:
+  default: info
+  logs:
+    pydeconz: debug
+    homeassistant.components.deconz: debug
+
+logbook:
+  include:
+    domains: 
+      - sensor
+      - switch
+      - media_player
+      - climate
+      - binary_sensor
+      - lights
+      - script
+      - device_tracker
+      - automation
+      - cover
+  exclude:
+    entities:
+      - sensor.rob_office_distance
+      - sensor.rob_bedroom_distance
+      - sensor.rob_familyroom_distance
+      - sensor.rob_livingroom_distance
+      - sensor.rob_kitchen_distance
+      - sensor.kristen_office_distance
+      - sensor.kristen_bedroom_distance
+      - sensor.kristen_familyroom_distance
+      - sensor.kristen_livingroom_distance
+      - sensor.kristen_kitchen_distance
+
+frontend:
+
+panel_custom:
+  - name: floorplan
+    sidebar_title: Floorplan
+    sidebar_icon: mdi:home
+    url_path: floorplan
+    config: !include floorplan.yaml
+
+mqtt:
+  broker: 192.168.3.187
+  port: 1883
+  discovery: true
+  discovery_prefix: homeassistant
+
+http:
+  api_password: !secret api_password
+  base_url: !secret base_url
+  ssl_certificate: /ssl/fullchain.pem
+  ssl_key: /ssl/privkey.pem
+
+sleepiq:
+  username: !secret sleepiq_username
+  password: !secret sleepiq_password
+
+climate:
+  - platform: honeywell
+    username: !secret honeywell_username
+    password: !secret honeywell_password
+    scan_interval: 600
+    cool_away_temperature: 38
+    heat_away_temperature: 18
+    region: us
+
+
+cover:
+  - platform: mqtt
+    name: "Garage Door"
+    state_topic: "garage/door/1/status"
+    command_topic: "garage/door/1/action"
+    availability_topic: "GarHAge/availability"
+
+tts:
+  - platform: google
+
+camera:
+  - platform: mjpeg
+    mjpeg_url: http://192.168.3.139/webcam/
+    still_image_url: http://192.168.3.139/cgi-bin/nph-mjgrab?1
+    name: Frontdoor 
+
+
+insteon_plm:
+  port: /dev/ttyUSB2
+
+#zwave:
+  #usb_path: /dev/ttyUSB0
+
+media_player:
+  - platform: spotify
+    client_id: !secret spotify_client_id
+    client_secret: !secret spotify_secret
+
+input_boolean:
+  notifications:
+    name: Notifications
+    initial: on
+
+##########################################################################
+#                               Includes                                ##
+##########################################################################
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+history: !include history.yaml
+history_graph: !include history_graph.yaml
+cloud: !include cloud.yaml
+input_number: !include input_number.yaml
+light: !include lights.yaml
+sensor: !include sensors.yaml
+recorder: !include recorder.yaml
+binary_sensor: !include binary_sensors.yaml

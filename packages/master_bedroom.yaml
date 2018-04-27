@@ -1,0 +1,16 @@
+homeassistant:
+
+light:
+  - platform: group
+    name: Master Bedroom Lights
+    entities:
+      - light.bed_lamp_rob
+      - light.bed_lamp_kristen
+
+group:
+  master_bedroom_lights:
+    name: Master Bedroom Lights
+    view: no
+    entities: 
+      - light.bed_lamp_rob
+      - light.bed_lamp_kristen

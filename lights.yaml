@@ -1,0 +1,45 @@
+#- platform: group
+#  name: Livingroom Lights
+#  entities:
+#    - light.livingroom_tv
+#    - light.livingroom_lamp
+#    - light.front_door
+
+#- platform: group
+#  name: Master Bedroom Lights
+#  entities:
+#    - light.bed_lamp_kristen
+#    - light.bed_lamp_rob
+
+#- platform: group
+#  name: Garage Lights
+#  entities:
+#    - light.garage_1
+#    - light.garage_2
+
+- platform: group
+  name: Garage Lights
+  entities:
+    - light.garage_1
+    - light.garage_2
+
+- platform: group
+  name: Exterior Lights
+  entities:
+    - light.garage_lights
+    - light.front_porch
+
+
+- platform: group
+  name: Familyroom Lights
+  entities:
+    - light.40166e
+
+      #- platform: group
+      #  name: Basement Laundry Lights
+      #  entities:
+      #    - light.basement_laundry
+      #    - light.basement_crawl_space
+      #    - light.basement_workbench
+      #    - light.basement_crawl_space_stairs
+

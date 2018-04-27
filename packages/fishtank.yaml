@@ -1,0 +1,43 @@
+homeassistant:
+
+light:
+  - platform: mqtt_template
+    name: Fishtank Daylight
+    command_topic: "home/fishtank/output/daylight/set"
+    state_topic: "home/fishtank/output/daylight/status"
+    command_on_template: "ON"
+    command_off_template: "OFF"
+
+  - platform: mqtt_template
+    command_topic: "home/fishtank/output/nightlight/set"
+    state_topic: "home/fishtank/output/nightlight/status"
+    name: Fishtank Nightlight
+    command_on_template: "ON"
+    command_off_template: "OFF"
+
+automation:
+  - alias: Fishtank Nightlight On
+    trigger:
+      platform: time
+      at: '19:30:00'
+    action:
+      - service: light.turn_on
+        entity_id: light.fishtank_nightlight
+      - service: light.turn_off
+        entity_id: light.fishtank_daylight
+
+  - alias: Fishtank All lights off
+    trigger:
+      platform: time
+      at: '21:00:00'
+    action:
+      - service: light.turn_off
+        entity_id: light.fishtank_nightlight
+
+  - alias: Fishtank Daylight
+    trigger:
+      platform: time
+      at: '7:15:00'
+    action:
+      - service: light.turn_on
+        entity_id: light.fishtank_daylight

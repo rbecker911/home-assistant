@@ -1,0 +1,6 @@
+#- name: BedFan
+#  platform: mqtt
+#  state_topic: homeassistant/switch/bedroom_fan/state
+#  command_topic: homeassistant/switch/bedroom_fan/set
+#  payload_on: "ON"
+#  payload_off: "OFF"

@@ -1,0 +1,93 @@
+go_to_bed:
+  alias: Go to bed
+  sequence:
+    - service: script.turn_on
+      data:
+        entity_id: script.turn_off_livingroom_mediacenter
+    - service: light.turn_off
+      data:
+        entity_id: lights.livingroom_lights
+    - service: light.turn_off
+      data:
+        entity_id: lights.familyroom_lights
+    - service: script.turn_off
+      data:
+        entity_id: script.turn_off_familyroom_mediacenter 
+
+leave_the_house:
+  alias: Leave the house
+  sequence:
+    - service: script.turn_on
+      data:
+        entity_id: script.turn_off_livingroom_mediacenter
+    - service: script.turn_on
+      data:
+        entity_id: script.turn_off_familyroom_mediacenter
+    - service: light.turn_off
+      data:
+        entity_id: group.interior_lights
+
+night_time_tv:
+  alias: Night time TV
+  sequence:
+    - service: light.turn_off
+      data:
+        entity_id: light.front_door
+        transition: 2
+    - service: light.turn_on
+      data:
+        entity_id: light.livingroom_tv_lamp
+        brightness: 25
+        transition: 2
+    - service: light.off
+      data:
+        entity_id: light.livingroom_lamp
+        transistion: 2
+
+sleep_tight:
+  alias: Sleep Tight
+  sequence:
+    - service: light.turn_off
+      data:
+        entity_id: light.master_bedroom_lights
+        transition: 4
+
+
+good_morning:
+  alias: Good Morning
+  sequence: 
+    - service: light.turn_on
+      data:
+        entity_id: group.interior_lights
+        brightness: 255
+        transition: 2
+    - service: script.turn_on
+      data:
+        entity_id: script.play_livingroom_cbs
+
+
+zanzito_send_notification:
+  alias: Send notification to Zanzito
+  sequence:
+    - condition: state
+      entity_id: input_boolean.notifications
+      state: 'on'
+    - service: mqtt.publish
+      data_template:
+        topic: 'zanzito/{{ dest_id }}/notification'
+        payload: '{{ message }}'
+        qos: 1
+        retain: 0
+
+notification:
+  alias: Notification
+  sequence:
+    - service: mqtt.publish
+      data_template:
+        topic: 'zanzito/robs_phone/notification'
+        payload: '{{ message }}'
+        qos: 1
+        retain: 0
+
+
+ 

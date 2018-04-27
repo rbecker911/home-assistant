@@ -1,0 +1,148 @@
+- alias: Monitor Traffic IN
+  trigger:
+    platform: state
+    entity_id: sensor.snmp_wan_in
+  action:
+    - service: input_number.set_value
+      data_template:
+        entity_id: input_number.internet_traffic_delta_in
+        value: '{{ ((trigger.to_state.state | int - trigger.from_state.state | int) * 1 ) / ( as_timestamp(trigger.to_state.last_updated) - as_timestamp(trigger.from_state.last_updated) ) }}'
+
+- alias: Monitor Traffic OUT
+  trigger:
+    platform: state
+    entity_id: sensor.snmp_wan_out
+  action:
+    - service: input_number.set_value
+      data_template:
+        entity_id: input_number.internet_traffic_delta_out
+        value: '{{ ((trigger.to_state.state | int - trigger.from_state.state | int) * 1 ) / ( as_timestamp(trigger.to_state.last_updated) - as_timestamp(trigger.from_state.last_updated) ) }}'
+
+- alias: Update garage door state on startup
+  trigger:
+    - platform: homeassistant
+      event: start
+  action:
+    - service: mqtt.publish
+      data:
+        topic: "garage/door/1/action"
+        payload: "STATE"
+
+- alias: 'Turn off outdoor lights at sunrise'
+  trigger:
+    platform: sun
+    event: sunrise
+    offset: '+00:00:00'
+  action:
+    service: light.turn_off
+    entity_id: group.outdoor_lights
+
+- alias: 'Turn on outdoor lights at sunset'
+  trigger:
+    platform: sun
+    event: sunset
+    offset: '+00:00:00'
+  action:
+    service: light.turn_on
+    entity_id: group.outdoor_lights
+
+        
+#- alias: 'Notify Garage Door is Open'
+#  trigger:
+#    platform: state
+#    entity_id: cover.garage_door
+#  condition:
+#    condition: and
+#    conditions:
+#      - condition: state
+#        entity_id: input_boolean.rob_in_bed
+#        state: 'on'
+#      - condition: state
+#        entity_id: input_boolean.kristen_in_bed
+#        state: 'on'
+#      - condition: state
+#        entity_id: cover.garage_door
+#        state: 'open'
+#      - condition: state
+#        entity_id: input_boolean.notifications
+#        state: 'on'
+#  action:
+#    - service: script.zanzito_send_notification
+#      data:
+#        dest_id: 'robs_phone'
+#        message: 'The garage door is open.'
+
+
+- alias: 'Frontdoor Motion'
+  trigger:
+    platform: state
+    entity_id: binary_sensor.front_door_motion
+    from: 'off'
+    to: 'on'
+  condition:
+    condition: or
+    conditions: 
+      - condition: sun
+        after: sunset
+      - condition: sun
+        before: sunrise
+  action:
+    - service: script.zanzito_send_notification
+      data:
+        dest_id: 'robs_phone'
+        message: 'Someone at the front door.'
+
+       
+- alias: 'Set Thermostat - In Bed'
+  trigger:
+    platform: state
+    entity_id: sensor.all_family
+    to: 'in_bed'
+    for:
+      minutes: 10
+  condition:    
+    condition: or  # 'when dark' condition: either after sunset or before sunrise
+    conditions:
+      - condition: sun
+        after: sunset
+      - condition: sun
+        before: sunrise
+  action:
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.thermostat
+        temperature: 68
+
+- alias: 'Set Thermostat - Awake'
+  trigger:
+    platform: state
+    entity_id: sensor.all_family
+    to: 'home'
+    from: 'in_bed'
+    for: 
+      minutes: 10
+  condition:
+    condition: time
+    after: '05:45:00'
+    before: '08:30:00'
+  action:
+    - service: climate.set_temperature
+      data:
+        entity_id:  climate.thermostat
+        temperature: 70
+
+- alias: 'Turn on lights - Kristen'
+  trigger:
+    platform: state
+    entity_id: sensor.kristen_beacon
+    from: 'not_home'
+  condition:
+    - condition: state
+      entity_id: group.livingroom_lights
+      state: 'off'
+  action:
+    - service: light.turn_on
+      entity_id: group.livingroom_lights
+      data:
+        brightness: 255 
+

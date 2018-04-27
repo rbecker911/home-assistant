@@ -1,0 +1,57 @@
+binary_sensor:
+  - platform: template
+    sensors:
+      livingroom_occupied:
+        friendly_name: "Livingroom Occupied"
+        device_class: "occupancy"
+        delay_off: 
+          minutes: 5
+        delay_on:
+          seconds: 10
+        value_template: >
+          {{ (is_state('sensor.kristen_beacon', 'livingroom')
+             or is_state('sensor.rob_beacon', 'livingroom'))
+             or not is_state('media_player.livingroom_tv', 'off') }}
+      familyroom_occupied:
+        friendly_name: "Familyroom Occupied"
+        device_class: "occupancy"
+        delay_off: 
+          minutes: 10
+        delay_on:
+          seconds: 5
+        value_template: >
+          {{ (is_state('sensor.kristen_beacon', 'familyroom')
+             or is_state('sensor.rob_beacon', 'familyroom'))
+             or not is_state('media_player.familyroom_tv', 'off') }}
+      kitchen_occupied:
+        friendly_name: "Kitchen Occupied"
+        device_class: "occupancy"
+        delay_off: 
+          minutes: 5
+        delay_on:
+          seconds: 15
+        value_template: >
+          {{ is_state('sensor.kristen_beacon', 'kitchen')
+             or is_state('sensor.rob_beacon', 'kitchen') }}
+      office_occupied:
+        friendly_name: "Office Occupied"
+        device_class: "occupancy"
+        delay_off: 
+          minutes: 5
+        delay_on:
+          seconds: 30
+        value_template: >
+          {{ is_state('sensor.kristen_beacon', 'office')
+             or is_state('sensor.rob_beacon', 'office') }}
+      bedroom_occupied:
+        friendly_name: "Bedroom Occupied"
+        device_class: "occupancy"
+        delay_off: 
+          minutes: 5
+        delay_on:
+          seconds: 3
+        value_template: >
+          {{ (is_state('sensor.kristen_beacon', 'bedroom')
+             or is_state('sensor.rob_beacon', 'bedroom') 
+             or is_state('sensor.sleepnumber_p6_kristen_sleepnumber', 'on')
+             or is_state('sensor.sleepnumber_p6_rob_sleepnumber', 'on')) }}

@@ -1,0 +1,582 @@
+###############################################################
+###### Views
+###############################################################
+default_view:
+  view: yes
+  icon: mdi:home
+  entities:
+    - group.windows_and_doors
+    - group.rooms_occupied
+#    - group.frontdoor
+    - group.family_location
+    - group.climate
+
+
+lighting:
+  view: yes
+  name: Lighting
+  entities:
+    - group.interior_lights
+    - group.exterior_lights
+
+livingroom:
+  view: yes
+  entities:
+    - group.livingroom_lights
+    - media_player.livingroom_tv
+    - media_player.spotify
+
+master_bedroom:
+  name: Master Bedroom
+  view: yes
+  entities:
+    - group.master_bedroom_sensors
+    - history_graph.master_bedroom_climate
+    - group.master_bedroom_lights
+
+basement:
+  view: yes
+  entities:
+    - group.laundry
+    - group.basement_climate
+    - group.basement_lights
+    - history_graph.dryer_temp
+
+
+familyroom:
+  view: yes
+  name: Familyroom
+  entities:
+    - group.familyroom_mediacenter
+    - light.familyroom_lights
+    - group.fishtank_lights
+    - binary_sensor.door_back
+
+outside:
+  name: Outside
+  view: yes
+  entities:
+    - group.exterior_lights
+    - group.garage_door
+    - group.pacifica
+    - group.frontdoor
+
+weather_tab:
+  name: Weather
+  icon: mdi:weather-sunset
+  view: yes
+  entities:
+    - group.climate_all
+    - group.weather_info
+    - group.weather_forecast
+
+notifications:
+  name: Notifications
+  view: yes
+  icon: mdi:alert-octagram
+  entities:
+    - group.notification_control 
+
+networktab:
+  name: Network
+  icon: mdi:laptop
+  view: yes
+  entities:
+    - group.ping_network_equipment
+    - group.ping_room_assistants
+    - group.ping_kodi_players
+    - group.ping_monitoring_equipment
+    - group.wan_bandwidth
+    - group.wan_bandwidth_mean
+    - group.internet_graphs
+    - group.nzbget
+    - group.pihole
+
+zigbee_sensors:
+  name: Zigbee Sensors
+  view: yes
+  entities:
+    - group.zigbee_lastupdated_sensors
+    - group.zigbee_temperature_sensors
+    - group.zigbee_sensor_battery_level
+
+settings:
+  name: Settings
+  view: yes
+  entities:
+    - group.all_automations
+    - group.all_scripts
+    - group.all_switches
+
+presence_data:
+  name: Presence Data
+  view: yes
+  entities:
+    - group.presence
+    - group.rooms_occupied
+    - group.rob_presence_sensors
+    - group.kristen_presence_sensors
+    - group.robs_phone
+    - group.kristens_phone
+    - sensor.rob_presence
+    - sensor.rob_in_bed
+
+
+############################################################
+#  Debug Views
+############################################################
+mediacenters:
+  name: Mediacenters
+  view: yes
+  entities:
+    - group.livingroom_mediacenter_all
+    - group.familyroom_mediacenter_all
+
+
+
+livingroom_mediacenter_all:
+  name: livingroom Mediacenter
+  view: no
+  entities: 
+    - media_player.livingroom_tv
+    - media_player.livingroom_kodi
+    - media_player.livingroom_receiver
+    - switch.livingroom_tv
+    - binary_sensor.livingroom_tv_power
+    - input_boolean.livingroom_tv_morning_poweron
+    - script.turn_on_livingroom_mediacenter
+    - script.turn_off_livingroom_mediacenter
+    - script.play_livingroom_pbs
+    - script.play_livingroom_cbs
+    - automation.kristen_morning_tv
+
+familyroom_mediacenter_all:
+  view: no
+  entities:
+    - media_player.familyroom_tv
+    - media_player.familyroom_kodi
+    - switch.familyroom_tv
+    - binary_sensor.familyroom_tv_power
+    - script.turn_off_familyroom_mediacenter
+    - script.turn_on_familyroom_mediacenter
+    - script.familyroom_tv_volume_up
+    - script.familyroom_tv_volume_down
+    - script.familyroom_tv_mute
+
+
+############################################################
+#### Groups
+############################################################
+
+
+#exterior_doors: 
+#  name: Exterior Doors
+#  view: no
+#  control: hidden
+#  entities:
+#    - cover.back_door
+#    - cover.garage_door
+#    - cover.front_door
+
+#windows:
+#  name: windows
+#  view: no
+#  control: hidden
+#  entities:
+#    - binary_sensor.window_livingroom
+#    - binary_sensor.window_family_room_large
+
+windows_and_doors:
+  name: Windows and Doors 
+  view: no
+  control: hidden
+  entities:
+    - group.exterior_doors
+    - group.windows
+      
+
+family_location:
+  name: Family Location
+  view: no
+  control: hidden
+  entities:
+    - sensor.rob_beacon
+    - sensor.kristen_beacon
+
+
+laundry:
+  name: Laundry
+  view: no
+  entities:
+    - binary_sensor.dryer
+    - binary_sensor.washing_machine
+    - sensor.dryer_temperature
+    - sensor.washing_machine_energy
+    - sensor.washing_machine_apparent
+    - history_graph.dryer_temp
+    - history_graph.washingmachine_current
+    - history_graph.basement_uptime
+    - sensor.washing_machine_current
+    - binary_sensor.laundry_motion
+
+master_bedroom_climate:
+  name: Master Bedroom Climate
+  view: no
+  entities:
+    - sensor.temperature_master_bedroom
+    - sensor.humidity_master_bedroom
+    - history_graph.master_bedroom_climate
+
+
+basement_climate:
+  name: Basement Climate
+  view: no
+  entities:
+    - sensor.temperature_basement
+    - sensor.humidity_basement
+
+frontdoor:
+  name: Frontdoor
+  view: no
+  entities:
+    - camera.frontdoor
+    - binary_sensor.front_door_motion
+
+rooms_occupied:
+  name: Room Occupancy
+  view: no
+  entities:
+    - binary_sensor.livingroom_occupied
+    - binary_sensor.office_occupied
+    - binary_sensor.familyroom_occupied
+    - binary_sensor.kitchen_occupied
+    - binary_sensor.bedroom_occupied
+    - binary_sensor.upstairs_hallway
+    - binary_sensor.laundry_motion
+
+rob_presence_sensors:
+  name: rob presence sensors
+  view: no
+  entities:
+    - sensor.rob_office_distance
+    - sensor.rob_bedroom_distance
+    - sensor.rob_familyroom_distance
+    - sensor.rob_livingroom_distance
+    - sensor.rob_kitchen_distance
+    - binary_sensor.rob_in_bed
+    - binary_sensor.rob_presence
+    - device_tracker.robs_ping
+
+kristen_presence_sensors:
+  name: kristen_presence_sensors
+  view: no
+  entities:
+    - sensor.kristen_office_distance
+    - sensor.kristen_bedroom_distance
+    - sensor.kristen_familyroom_distance
+    - sensor.kristen_livingroom_distance
+    - sensor.kristen_kitchen_distance
+    - binary_sensor.kristen_in_bed
+    - binary_sensor.kristen_presence
+    - device_tracker.kristens_ping
+
+exterior_lights:
+  name: Exterior Lights
+  view: no
+  entities:
+    - light.exterior_lights
+
+interior_lights:
+  name: Interior Lights
+  view: no
+  entities:
+    - light.livingroom_lights
+    - light.master_bedroom_lights
+    - light.familyroom_lights
+    - light.basement_lights
+
+climate:
+  view: no
+  entities:
+    - climate.thermostat
+    - history_graph.room_temperatures
+    - history_graph.room_humidity
+
+climate_all:
+  view: no
+  entities:
+    - climate.thermostat
+    - sensor.thermostat_mode
+    - sensor.thermostat_current_temp
+    - sensor.temperature_master_bedroom
+    - sensor.humidity_master_bedroom
+    - sensor.temperature_office
+    - sensor.humidity_office
+    - history_graph.room_temperatures
+    - history_graph.room_humidity
+    - history_graph.sensor_temperatures
+    - sensor.temperature_window_livingroom
+    - sensor.temperature_front_door
+    - sensor.temperature_back_door
+    - sensor.temperature_window_familyroom_large
+
+
+wan_bandwidth:
+  name: WAN Bandwidth Monitoring
+  view: no
+  entities:
+    - sensor.internet_speed_in
+    - sensor.internet_speed_out
+
+wan_bandwidth_mean:
+  name: WAN Bandwidth Average
+  view: no
+  entities:
+    - sensor.wan_traffic_in_mean
+    - sensor.wan_traffic_out_mean
+
+snmp_raw_values:
+  name: SNMP Raw Values
+  view: no
+  entities:
+    - sensor.snmp_wan_in
+    - sensor.snmp_wan_out
+
+speedtest:
+  name: Speedtest
+  view: no
+  entities:
+    - sensor.speedtest_download
+    - sensor.speedtest_upload
+    - sensor.speedtest_ping
+
+internet_graphs:
+  name: Internet Graphs
+  view: no
+  entities:
+    - history_graph.internet_bandwidth
+    - history_graph.internet_latency
+    - history_graph.internet_speedtest
+
+nzbget:
+  name: Nzbget
+  view: no
+  entities:
+    - sensor.nzbget_article_cache
+    - sensor.nzbget_average_speed
+    - sensor.nzbget_download_paused
+    - sensor.nzbget_speed
+
+master_bedroom_sensors:
+  name: Master Bedroom Sensors
+  view: no
+  entities:
+    - sensor.humidity_master_bedroom
+    - sensor.temperature_master_bedroom
+    - sensor.sleepnumber_p6_kristen_sleepnumber
+    - sensor.sleepnumber_p6_rob_sleepnumber
+
+
+dark_sky_sensors:
+  view: no
+  entities:
+    - sensor.dark_sky_daily_high_temperature
+    - sensor.dark_sky_daily_high_temperature_1
+    - sensor.dark_sky_daily_high_temperature_2
+    - sensor.dark_sky_daily_high_temperature_3
+    - sensor.dark_sky_daily_high_temperature_4
+    - sensor.dark_sky_daily_high_temperature_5
+    - sensor.dark_sky_daily_high_temperature_6
+    - sensor.dark_sky_daily_high_temperature_7
+    - sensor.dark_sky_daily_low_temperature
+    - sensor.dark_sky_daily_low_temperature_1
+    - sensor.dark_sky_daily_low_temperature_2
+    - sensor.dark_sky_daily_low_temperature_3
+    - sensor.dark_sky_daily_low_temperature_4
+    - sensor.dark_sky_daily_low_temperature_5
+    - sensor.dark_sky_daily_low_temperature_6
+    - sensor.dark_sky_daily_low_temperature_7
+    - sensor.dark_sky_humidity
+    - sensor.dark_sky_humidity_1
+    - sensor.dark_sky_humidity_2
+    - sensor.dark_sky_humidity_3
+    - sensor.dark_sky_humidity_4
+    - sensor.dark_sky_humidity_5
+    - sensor.dark_sky_humidity_6
+    - sensor.dark_sky_humidity_7
+    - sensor.dark_sky_icon
+    - sensor.dark_sky_icon_1
+    - sensor.dark_sky_icon_2
+    - sensor.dark_sky_icon_3
+    - sensor.dark_sky_icon_4
+    - sensor.dark_sky_icon_5
+    - sensor.dark_sky_icon_6
+    - sensor.dark_sky_icon_7
+    - sensor.dark_sky_precip
+    - sensor.dark_sky_precip_1
+    - sensor.dark_sky_precip_2
+    - sensor.dark_sky_precip_3
+    - sensor.dark_sky_precip_4
+    - sensor.dark_sky_precip_5
+    - sensor.dark_sky_precip_6
+    - sensor.dark_sky_precip_7
+    - sensor.dark_sky_precip_intensity_1
+    - sensor.dark_sky_precip_intensity
+    - sensor.dark_sky_precip_intensity_2
+    - sensor.dark_sky_precip_intensity_3
+    - sensor.dark_sky_precip_intensity_4
+    - sensor.dark_sky_precip_intensity_5
+    - sensor.dark_sky_precip_intensity_6
+    - sensor.dark_sky_precip_intensity_7
+    - sensor.dark_sky_precip_probability
+    - sensor.dark_sky_precip_probability_1
+    - sensor.dark_sky_precip_probability_2
+    - sensor.dark_sky_precip_probability_3
+    - sensor.dark_sky_precip_probability_4
+    - sensor.dark_sky_precip_probability_5
+    - sensor.dark_sky_precip_probability_6
+    - sensor.dark_sky_precip_probability_7
+    - sensor.dark_sky_pressure
+    - sensor.dark_sky_pressure_1
+    - sensor.dark_sky_pressure_2
+    - sensor.dark_sky_pressure_3
+    - sensor.dark_sky_pressure_4
+    - sensor.dark_sky_pressure_5
+    - sensor.dark_sky_pressure_6
+    - sensor.dark_sky_pressure_7
+    - sensor.dark_sky_wind_bearing
+    - sensor.dark_sky_wind_bearing_1
+    - sensor.dark_sky_wind_bearing_2
+    - sensor.dark_sky_wind_bearing_3
+    - sensor.dark_sky_wind_bearing_4
+    - sensor.dark_sky_wind_bearing_5
+    - sensor.dark_sky_wind_bearing_6
+    - sensor.dark_sky_wind_speed
+    - sensor.dark_sky_wind_bearing_7
+    - sensor.dark_sky_wind_speed_1
+    - sensor.dark_sky_wind_speed_2
+    - sensor.dark_sky_wind_speed_3
+    - sensor.dark_sky_wind_speed_4
+    - sensor.dark_sky_wind_speed_5
+    - sensor.dark_sky_wind_speed_6
+    - sensor.dark_sky_wind_speed_7
+    - sensor.forecast_0
+    - sensor.forecast_1
+    - sensor.forecast_2
+    - sensor.forecast_3
+    - sensor.forecast_4
+    - sensor.forecast_5
+    - sensor.forecast_6
+    - sensor.forecast_7
+    - sensor.forecast_fifth_icon
+    - sensor.forecast_first_icon
+    - sensor.forecast_fourth_icon
+    - sensor.forecast_second_icon
+    - sensor.forecast_seventh_icon
+    - sensor.forecast_sixth_icon
+    - sensor.forecast_third_icon
+
+presence:
+  view: no
+  entities:
+    - sensor.rob_beacon
+    - sensor.kristen_beacon
+    - sensor.all_family
+    - device_tracker.robs_phone
+    - device_tracker.kristens_phone
+    - binary_sensor.sleepnumber_p6_rob_is_in_bed
+    - binary_sensor.sleepnumber_p6_kristen_is_in_bed
+    - input_boolean.kristen_in_bed
+    - binary_sensor.upstairs_hallway
+
+garage_door:
+  view: no
+  name: Garage Door
+  entities:
+    - binary_sensor.door_garage
+    - cover.garage_door
+
+pihole:
+  view: no
+  entities:
+    - sensor.pihole_ads_blocked_today
+    - sensor.pihole_ads_percentage_blocked_today
+    - sensor.pihole_dns_queries_cached
+    - sensor.pihole_dns_queries_forwarded
+    - sensor.pihole_dns_queries_today
+    - sensor.pihole_dns_unique_clients
+    - sensor.pihole_dns_unique_domains
+    - sensor.pihole_domains_blocked
+
+fishtank_lights:
+  view: no
+  entities:
+    - light.fishtank_daylight
+    - light.fishtank_nightlight
+
+family_room_lights:
+  name: Family Room Lights
+  view: no
+  entities:
+    - light.40166e
+
+familyroom mediacenter:
+  view: no
+  entities:
+    - media_player.familyroom_tv
+    - script.familyroom_tv_volume_up
+    - script.familyroom_tv_volume_down
+    - script.familyroom_tv_mute
+
+
+kristens_phone:
+  name: kristens_phone
+  view: no
+  entities:
+    - sensor.kristens_phone_battery_level
+    - binary_sensor.kristens_phone_sound
+    - device_tracker.kristens_phone
+    - sensor.kristen_beacon
+#    - camera.kristens_phone_camrea
+#    - camera.kristens_shared_camera
+    - binary_sensor.kristens_phone_status
+    - sensor.kristens_phone_info
+    - sensor.kristens_phone_current_app
+    - binary_sensor.kristens_phone_status
+    - binary_sensor.kristens_phone_locked
+    - binary_sensor.kristens_phone_charging
+
+robs_phone:
+  name: robs_phone
+  view: no
+  entities:
+    - sensor.robs_phone_battery_level
+    - binary_sensor.robs_phone_sound
+    - device_tracker.robs_phone
+    - sensor.rob_beacon
+#    - camera.robs_phone_camrea
+#    - camera.robs_shared_camera
+    - binary_sensor.robs_phone_status
+    - sensor.robs_phone_info
+    - sensor.robs_phone_current_app
+    - binary_sensor.robs_phone_status
+    - binary_sensor.robs_phone_locked
+    - binary_sensor.robs_phone_charging
+
+
+
+notification_control:
+  name: Notification Control
+  view: no
+  entities:
+    - input_boolean.notifications
+    - input_boolean.kristen_napping_notification
+  
+pacifica:
+  name: Pacifica
+  view: no
+  entities:
+    - sensor.carpresencesignal
+    - sensor.carpresenceuptime
+    - binary_sensor.carpresence
+

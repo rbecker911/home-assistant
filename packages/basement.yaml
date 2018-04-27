@@ -1,0 +1,61 @@
+homeassistant:
+  customize:
+    binary_sensor.laundry_motion:
+      friendly_name: "Laundry Room Motion"
+    sensor.temperature_basement:
+      friendly_name: "Basement"
+
+sensor:
+  - name: temperature_basement
+    platform: mqtt
+    device_class: sensor
+    state_topic: basement_laundry/temperature/1
+    unit_of_measurement: "°F"
+    force_update: true
+
+  - name: humidity_basement
+    platform: mqtt
+    device_class: sensor
+    state_topic: basement_laundry/humidity
+    unit_of_measurement: "%"
+    force_update: true
+
+  - name: laundry_motion
+    platform: mqtt
+    state_topic: "basement_laundry/button/0"
+
+binary_sensor:
+  - platform: template
+    sensors:
+      laundry_motion:
+        device_class: motion
+        value_template: >-
+            {{ not is_state('sensor.laundry_motion', '1') }}
+
+light:
+  - platform: group
+    name: Crawl Space Lights
+    entities:
+      - light.basement_crawl_space
+      - light.basement_crawl_space_stairs
+  - platform: group
+    name: Laundry Lights
+    entities:
+      - light.basement_laundry
+      - light.basement_workbench
+  - platform: group
+    name: Basement Lights
+    entities:
+      - light.crawl_space_lights
+      - light.laundry_lights
+
+group:
+  basement_lights:
+    name: Basement Lights
+    view: no
+    entities:
+      - light.crawl_space_lights
+      - light.laundry_lights
+
+
+ 

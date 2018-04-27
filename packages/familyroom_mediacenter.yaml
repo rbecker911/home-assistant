@@ -1,0 +1,115 @@
+homeassistant:
+
+media_player:
+  - platform: kodi
+    host: 192.168.3.122
+    port: 80
+    name: Familyroom Kodi
+  
+  - platform: universal
+    name: Familyroom TV
+    children:
+      - media_player.familyroom_kodi
+    state_template: >
+      {% if (is_state('media_player.familyroom_kodi', 'idle') or is_state('media_player.familyroom_kodi', 'off')) and is_state('binary_sensor.familyroom_tv_power', 'off') %}
+      off
+      {% else %}
+      on
+      {% endif %}
+    commands:
+      turn_on:
+        service: switch.turn_on
+        data:
+          entity_id: switch.familyroom_tv
+      turn_off:
+        service: script.turn_on
+        data:
+          entity_id: script.turn_off_familyroom_mediacenter
+      volume_up:
+        service: mqtt.publish
+        data:
+          topic: "familyroom_tv/cec/cmd"
+          payload: "volup"
+      volume_down:
+        service: mqtt.publish
+        data:
+          topic: "familyroom_tv/cec/cmd"
+          payload: "voldown"
+      volume_mute:
+        service: mqtt.publish
+        data:
+          topic: "familyroom_tv/cec/cmd"
+          payload: "mute"
+
+switch:
+  - platform: mqtt
+    name: "Familyroom TV"
+    state_topic: "familyroom_tv/cec/0"
+    command_topic: "familyroom_tv/cec/0/cmd"
+    payload_on: "on"
+    payload_off: "off"
+    optimistic: false
+    qos: 0
+    retain: true
+
+binary_sensor:
+  - platform: mqtt
+    state_topic: "familyroom_tv/cec/0"
+    name: "familyroom_tv_power"
+    payload_on: "on"
+    payload_off: "off"
+    device_class: "power"
+
+
+
+automation:
+  - alias: 'Familyroom TV - Turn off the TV when Kodi is in idle > 15 min'
+    trigger:
+      platform: state
+      entity_id: media_player.familyroom_kodi
+      to: 'idle'
+      for:
+        minutes: 15
+    action:
+      - service: script.turn_on
+        data:
+          entity_id: script.turn_off_familyroom_mediacenter
+
+
+script:
+  turn_off_familyroom_mediacenter:
+    alias: Turn off familyroom mediacenter
+    sequence:
+      - service: media_player.media_stop
+        data:
+          entity_id: media_player.familyroom_kodi
+      - service: switch.turn_off
+        data:
+          entity_id: switch.familyroom_tv
+
+  play_familyroom_cbs:
+    alias: CBS family room
+    sequence:
+      - service: switch.turn_on
+        data:
+          entity_id: switch.familyroom_tv
+      - service: media_player.play_media
+        data_template:
+          entity_id: media_player.familyroom_kodi
+          media_content_type: "CHANNEL"
+          media_content_id: "7"
+
+  play_familyroom_pbs:
+    alias: PBS family room
+    sequence:
+      - service: switch.turn_on
+        data:
+          entity_id: switch.familyroom_tv
+      - service: media_player.play_media
+        data_template:
+          entity_id: media_player.familyroom_kodi
+          media_content_type: "CHANNEL"
+          media_content_id: "5"
+
+
+

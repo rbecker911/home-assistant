@@ -1,0 +1,4 @@
+"group.*_lights":
+  icon: mdi:lightbulb
+"sensor.humidity_*":
+  icon: mdi:water-percent

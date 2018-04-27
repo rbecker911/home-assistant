@@ -1,0 +1,96 @@
+homeassistant:
+  customize:
+    sensor.washing_machine_energy:
+      friendly_name: Washing Machine Watts Used
+      icon: "mdi:flash"
+    sensor.washing_machine_current:
+      friendly_name: Washing Machine Amps
+      icon: "mdi:flash"
+    sensor.washing_machine_apparent:
+      friendly_name: Washing Machine Watts
+      icon: "mdi:flash"
+    sensor.dryer_temperature:
+      friendly_name: "Dryer Temperature"
+binary_sensor:
+  - platform: template
+    sensors:
+      dryer:
+        friendly_name: "Dryer"
+        device_class: "power"
+        delay_on:
+          seconds: 30
+        delay_off:
+          seconds: 30
+        value_template: >-
+                {{ is_state('binary_sensor.dryer_heating', 'on') and states.sensor.dryer_temperature.state | float > 80 }}
+      washing_machine:
+        friendly_name: "Washing Machine"
+        device_class: "power"
+        delay_on: 
+          seconds: 30
+        delay_off:
+          seconds: 30 
+        value_template: >-
+                {{ states.sensor.washing_machine_apparent.state | int > 15 }}
+
+  - platform: trend
+    sensors:
+      dryer_heating:
+        entity_id: sensor.dryer_temperature
+        friendly_name: "dryer_heating"
+        max_samples: 30
+        sample_duration: 30
+        min_gradient: 0.05
+      dryer_cooling:
+        max_samples: 30
+        sample_duration: 30
+        entity_id: sensor.dryer_temperature
+        friendly_name: "dryer_cooling"
+        min_gradient: -0.1
+
+
+     
+sensor:
+  - name: dryer_temperature
+    platform: mqtt
+    device_class: sensor
+    state_topic: basement_laundry/temperature/0
+    unit_of_measurement: "°F"
+
+  - name: washing_machine_current
+    platform: mqtt
+    device_class: sensor
+    state_topic: basement_laundry/current
+    unit_of_measurement: A
+
+  - name: washing_machine_apparent
+    platform: mqtt
+    device_class: sensor
+    state_topic: basement_laundry/apparent
+    unit_of_measurement: W
+
+  - name: washing_machine_energy
+    platform: mqtt
+    device_class: sensor
+    state_topic: basement_laundry/energy
+    unit_of_measurement: kWh
+
+
+#
+history_graph:
+  dryer_graph:
+    name: Dryer Temp
+    hours_to_show: 4 
+    entities:
+      - sensor.dryer_temperature
+  washingmachine_graph:
+    name: WashingMachine Current
+    hours_to_show: 4
+    entities:
+      - sensor.washing_machine_current
+  washingmachine_watts_graph: 
+    name: WashingMachine Watts
+    hours_to_show: 4
+    entities:
+      - sensor.washing_machine_apparent
+
