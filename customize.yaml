@@ -49,17 +49,17 @@ light.familyroom_lights:
 light.master_bedroom_lights:
   friendly_name: Master Bedroom
 sensor.temperature_master_bedroom:
-  friendly_name: Master Bedroom
+  friendly_name: Master Bedroom Temp
 sensor.humidity_master_bedroom:
-  friendly_name: Master Bedroom
+  friendly_name: Master Bedroom Humidity
 sensor.temperature_office:
-  friendly_name: Office
+  friendly_name: Office Temp
 sensor.humidity_office:
-  friendly_name: Office
+  friendly_name: Office Humidity
 sensor.temperature_basement:
-  friendly_name: Basement
-sensor.humidity_basement:
-  friendly_name: Basement
+  friendly_name: Basement Temp
+sensor.humidity_basement: 
+  friendly_name: Basement Humidity
 history_graph.room_temperatures:
   friendly_name: Temperatures
 cover.garage_door:
