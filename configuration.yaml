@@ -108,7 +108,7 @@ tts:
 camera:
   - platform: mjpeg
     mjpeg_url: http://192.168.3.139/webcam/
-    still_image_url: http://192.168.3.139/cgi-bin/nph-mjgrab?2
+    still_image_url: http://192.168.3.139/cgi-bin/nph-mjgrab?1
     name: Frontdoor 
 
 
